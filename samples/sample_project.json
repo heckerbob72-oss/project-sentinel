@@ -1,0 +1,35 @@
+{
+  "project": {
+    "name": "Project Sentinel Demo",
+    "objective": "Deliver an explainable AI planning assistant by the deadline.",
+    "project_type": "hackathon",
+    "methodology": "scrum",
+    "priority": "high",
+    "start_date": "2026-08-01",
+    "deadline": "2026-08-10",
+    "budget": 0
+  },
+  "team": [
+    {"name": "Asha Rao", "role": "Backend Engineer", "capacity_hours": 40, "skills": {"python": 5, "fastapi": 4, "security": 3}},
+    {"name": "Ben Cole", "role": "Frontend Engineer", "capacity_hours": 40, "skills": {"react": 5, "typescript": 4, "ux": 3}},
+    {"name": "Chen Li", "role": "AI Engineer", "capacity_hours": 40, "skills": {"ai": 5, "python": 4, "data": 3}},
+    {"name": "Dev Shah", "role": "Designer / QA", "capacity_hours": 32, "skills": {"ux": 4, "qa": 4, "writing": 3}}
+  ],
+  "tasks": [
+    {"id": "T-01", "label": "Scope MVP", "optimistic": 0.25, "most_likely": 0.5, "pessimistic": 1, "required_skills": ["analysis"]},
+    {"id": "T-02", "label": "Backend API", "optimistic": 1, "most_likely": 2, "pessimistic": 4, "required_skills": ["python", "fastapi"]},
+    {"id": "T-03", "label": "Frontend dashboard", "optimistic": 1, "most_likely": 2, "pessimistic": 5, "required_skills": ["react", "typescript"]},
+    {"id": "T-04", "label": "Agent workflow", "optimistic": 1, "most_likely": 2, "pessimistic": 3, "required_skills": ["ai", "python"]},
+    {"id": "T-05", "label": "Integration testing", "optimistic": 0.5, "most_likely": 1, "pessimistic": 2, "required_skills": ["qa"]},
+    {"id": "T-06", "label": "Demo & slides", "optimistic": 0.25, "most_likely": 0.5, "pessimistic": 1, "required_skills": ["comms", "ux"]}
+  ],
+  "dependencies": [
+    {"source": "T-01", "target": "T-02", "reason": "MVP scope precedes backend"},
+    {"source": "T-01", "target": "T-03", "reason": "MVP scope precedes frontend"},
+    {"source": "T-01", "target": "T-04", "reason": "MVP scope precedes agent workflow"},
+    {"source": "T-02", "target": "T-05", "reason": "Backend before integration testing"},
+    {"source": "T-03", "target": "T-05", "reason": "Frontend before integration testing"},
+    {"source": "T-04", "target": "T-05", "reason": "Workflow before integration testing"},
+    {"source": "T-05", "target": "T-06", "reason": "Testing before demo"}
+  ]
+}

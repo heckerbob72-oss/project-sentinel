@@ -1,0 +1,204 @@
+# Project Sentinel — Risk Rulebook
+# Rule-based, deterministic, evidence-backed risk detection.
+# Every rule maps a COMPUTED project metric to a severity when a threshold is crossed.
+# No opaque ML scoring. Edit thresholds here to tune organisational risk tolerance.
+#
+# Metric glossary (all computed deterministically by the engines):
+#   max_utilisation           : highest member utilisation ratio (1.0 = 100% capacity)
+#   overloaded_members        : count of members with utilisation > 1.0
+#   schedule_pressure         : project_duration / deadline (>1 = infeasible)
+#   deadline_feasible         : 1 if project fits deadline else 0
+#   testing_window_days       : days allocated for testing before deadline
+#   spof_count                : number of single-point-of-failure tasks
+#   unassigned_tasks          : tasks with no owner
+#   skill_gap_count           : required skills not present on the team
+#   requirement_completeness  : 0..1 intake completeness ratio
+#   dependency_density        : edges / nodes in the dependency graph
+#   documentation_ratio       : documentation tasks completed / planned
+#   demo_readiness            : 0..1 readiness for demo/submission
+#   budget_utilisation        : spend / budget (>1 = over budget)
+#   external_dependencies     : count of tasks blocked on external parties
+#   scope_change_count        : number of approved scope changes
+
+rules:
+  - rule_id: RISK_RESOURCE_OVERLOAD
+    name: Resource Overload
+    description: One or more team members are allocated beyond their capacity.
+    category: resource_overload
+    condition: {metric: max_utilisation, op: ">", value: null}
+    threshold: 1.0
+    severity: high
+    rationale: >
+      Members allocated over 100% capacity will slip tasks, drop quality, or burn out.
+      Overload on a critical-path owner directly threatens the deadline.
+    evidence_required: [member utilisation, allocation hours]
+    recommended_action: Redistribute workload or add a backup owner for overloaded members.
+
+  - rule_id: RISK_SCHEDULE_COMPRESSION
+    name: Schedule Compression
+    description: The plan does not fit within the deadline.
+    category: schedule_compression
+    condition: {metric: schedule_pressure, op: ">", value: null}
+    threshold: 1.0
+    severity: critical
+    rationale: >
+      Project duration exceeds the available time. Without scope cuts or added
+      capacity the deadline cannot be met.
+    evidence_required: [critical path duration, deadline]
+    recommended_action: Reduce scope, parallelise critical work, or renegotiate the deadline.
+
+  - rule_id: RISK_TESTING_WINDOW_MINIMUM
+    name: Insufficient Testing Window
+    description: Testing starts too close to the deadline to be effective.
+    category: testing_delay
+    condition: {metric: testing_window_days, op: "<", value: null}
+    threshold: 3
+    severity: high
+    rationale: >
+      A testing window under 3 days leaves no room to find and fix defects before
+      delivery. Integration and UAT are the most common late-stage failure points.
+    evidence_required: [testing task start, deadline]
+    recommended_action: Front-load test planning and begin testing earlier in parallel.
+
+  - rule_id: RISK_SINGLE_POINT_OF_FAILURE
+    name: Single Point of Failure
+    description: Critical downstream work depends on a single task or owner.
+    category: single_point_of_failure
+    condition: {metric: spof_count, op: ">", value: null}
+    threshold: 0
+    severity: high
+    rationale: >
+      When multiple downstream tasks depend solely on one task/owner, any delay
+      there cascades across the whole plan with no fallback.
+    evidence_required: [dependency graph, ownership]
+    recommended_action: Assign a backup owner and decouple downstream dependencies.
+
+  - rule_id: RISK_UNASSIGNED_WORK
+    name: Unassigned Work
+    description: Tasks exist with no responsible owner.
+    category: resource_overload
+    condition: {metric: unassigned_tasks, op: ">", value: null}
+    threshold: 0
+    severity: medium
+    rationale: >
+      Unassigned tasks have no accountability and are the most likely to be
+      forgotten until they block delivery.
+    evidence_required: [allocation table]
+    recommended_action: Assign every task to a named owner before baselining the plan.
+
+  - rule_id: RISK_SKILL_MISMATCH
+    name: Skill Gap
+    description: Required skills are missing from the team.
+    category: skill_mismatch
+    condition: {metric: skill_gap_count, op: ">", value: null}
+    threshold: 0
+    severity: high
+    rationale: >
+      Tasks that require skills nobody on the team has will either be done poorly
+      or block entirely. This is a leading cause of estimate overrun.
+    evidence_required: [required skills, member skills]
+    recommended_action: Upskill, pair, or bring in a specialist for the missing skills.
+
+  - rule_id: RISK_UNCLEAR_REQUIREMENTS
+    name: Unclear Requirements
+    description: Intake is incomplete; key project facts are missing.
+    category: unclear_requirements
+    condition: {metric: requirement_completeness, op: "<", value: null}
+    threshold: 0.7
+    severity: high
+    rationale: >
+      Planning on incomplete requirements produces plans that must be reworked.
+      Below 70% intake completeness, scope and estimates are unreliable.
+    evidence_required: [intake completeness]
+    recommended_action: Run gap analysis and resolve missing critical fields before planning.
+
+  - rule_id: RISK_DEADLINE_INFEASIBLE
+    name: Deadline Infeasible
+    description: The critical path cannot complete before the deadline.
+    category: schedule_compression
+    condition: {metric: deadline_feasible, op: "==", value: null}
+    threshold: 0
+    severity: critical
+    rationale: >
+      A deterministic CPM calculation shows the earliest possible finish is after
+      the deadline. This is a hard constraint violation, not an estimate.
+    evidence_required: [CPM result, deadline]
+    recommended_action: Trigger rescue mode; cut scope or extend the deadline.
+
+  - rule_id: RISK_DEPENDENCY_CONCENTRATION
+    name: Dependency Concentration
+    description: The plan is densely coupled, amplifying delay cascades.
+    category: integration_complexity
+    condition: {metric: dependency_density, op: ">", value: null}
+    threshold: 1.5
+    severity: medium
+    rationale: >
+      High edge-to-node ratio means most tasks are coupled; a single slip
+      propagates widely, making the plan fragile.
+    evidence_required: [dependency graph metrics]
+    recommended_action: Decouple tasks and introduce buffers on high-fan-out nodes.
+
+  - rule_id: RISK_DOCUMENTATION_DELAY
+    name: Documentation Delay
+    description: Documentation is lagging behind delivery.
+    category: documentation_delay
+    condition: {metric: documentation_ratio, op: "<", value: null}
+    threshold: 0.5
+    severity: low
+    rationale: >
+      Documentation left to the end is routinely dropped under deadline pressure,
+      hurting handover and submission completeness.
+    evidence_required: [documentation task status]
+    recommended_action: Document incrementally alongside each deliverable.
+
+  - rule_id: RISK_DEMO_READINESS
+    name: Demo / Submission Not Ready
+    description: Demo or submission readiness is below the safe threshold.
+    category: demo_readiness
+    condition: {metric: demo_readiness, op: "<", value: null}
+    threshold: 0.6
+    severity: high
+    rationale: >
+      A demo/submission below 60% readiness close to the deadline risks a failed
+      delivery even if the underlying work is sound.
+    evidence_required: [demo checklist]
+    recommended_action: Prepare a fallback demo and protect demo-critical tasks.
+
+  - rule_id: RISK_BUDGET_LIMITATION
+    name: Budget Overrun
+    description: Spend is approaching or exceeding budget.
+    category: budget_limitation
+    condition: {metric: budget_utilisation, op: ">", value: null}
+    threshold: 0.9
+    severity: medium
+    rationale: >
+      Above 90% budget utilisation there is little room for the unexpected;
+      overruns force scope or quality compromises.
+    evidence_required: [spend, budget]
+    recommended_action: Re-forecast, defer non-critical spend, and flag to stakeholders.
+
+  - rule_id: RISK_EXTERNAL_DEPENDENCY
+    name: External Dependency Risk
+    description: Delivery depends on external parties outside team control.
+    category: external_dependency_risk
+    condition: {metric: external_dependencies, op: ">", value: null}
+    threshold: 1
+    severity: medium
+    rationale: >
+      External dependencies cannot be directly managed; multiple of them multiply
+      the chance of an uncontrollable blocker.
+    evidence_required: [dependency ownership]
+    recommended_action: Establish SLAs and fallback plans for each external dependency.
+
+  - rule_id: RISK_SCOPE_CREEP
+    name: Scope Creep
+    description: Scope has changed repeatedly during execution.
+    category: scope_creep
+    condition: {metric: scope_change_count, op: ">", value: null}
+    threshold: 2
+    severity: medium
+    rationale: >
+      Repeated scope changes erode the baseline and the schedule buffer, and are a
+      leading predictor of missed deadlines.
+    evidence_required: [change log]
+    recommended_action: Freeze scope and route further changes through formal approval.

@@ -1,0 +1,35 @@
+PROJECT BRIEF — SentinelOps Hackathon Entry
+
+Objective: Build an agentic AI project co-ordinator that helps hackathon teams
+plan and deliver on time with explainable, evidence-backed recommendations.
+
+Business problem: Teams routinely miss deadlines because planning is ad-hoc,
+risks are spotted too late, workload is unbalanced, and testing is squeezed into
+the final hours.
+
+Team of 4 members.
+- 1 backend engineer (Python, FastAPI)
+- 1 frontend engineer (React, TypeScript)
+- 1 AI engineer (LLMs, RAG)
+- 1 designer / QA
+
+Skills available: python, fastapi, react, typescript, ai, ux, qa.
+
+Deliverables:
+- Working backend API
+- Interactive dashboard
+- Multi-agent planning workflow
+- Demo and pitch deck
+
+Deadline: 2026-08-10.
+Demo date: 2026-08-10.
+Testing window: 2 days.
+
+Constraints: Must run locally via Docker. Budget: 0 (hackathon).
+Submission rules: code repository plus a 5-minute demo video.
+
+Success criteria: an end-to-end plan generated from an uploaded brief, with
+explainable risk detection, a project health score, and a what-if simulation.
+
+Known risks mentioned by the team: the AI engineer is also responsible for the
+demo, and integration testing is scheduled for the final day.
