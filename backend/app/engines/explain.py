@@ -16,12 +16,12 @@ reused inside engines, agents, and API responses.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 
 def _utcnow() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 @dataclass
@@ -75,19 +75,19 @@ class Explanation:
     agent: str = "deterministic-engine"
     timestamp: str = field(default_factory=_utcnow)
 
-    def add_reason(self, reason: str) -> "Explanation":
+    def add_reason(self, reason: str) -> Explanation:
         self.reasoning.append(reason)
         return self
 
-    def add_evidence(self, source: str, detail: str, value: Any = None) -> "Explanation":
+    def add_evidence(self, source: str, detail: str, value: Any = None) -> Explanation:
         self.evidence.append(Evidence(source=source, detail=detail, value=value))
         return self
 
-    def add_calc(self, calc: Calculation) -> "Explanation":
+    def add_calc(self, calc: Calculation) -> Explanation:
         self.calculations.append(calc)
         return self
 
-    def trigger(self, rule_id: str) -> "Explanation":
+    def trigger(self, rule_id: str) -> Explanation:
         if rule_id not in self.rules_triggered:
             self.rules_triggered.append(rule_id)
         return self

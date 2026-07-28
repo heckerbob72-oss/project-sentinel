@@ -5,7 +5,7 @@ not installed/reachable, an in-memory cosine store is used so the app still runs
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from .embeddings import cosine, embed
 

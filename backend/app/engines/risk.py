@@ -80,7 +80,7 @@ class RiskEngine:
         self.rules = self._load_rules(self.rules_path)
 
     def _load_rules(self, path: str) -> list[dict]:
-        with open(path, "r", encoding="utf-8") as fh:
+        with open(path, encoding="utf-8") as fh:
             data = yaml.safe_load(fh) or {}
         return data.get("rules", [])
 

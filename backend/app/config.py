@@ -2,13 +2,21 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+BACKEND_ROOT = PROJECT_ROOT / "backend"
+
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=(PROJECT_ROOT / ".env", BACKEND_ROOT / ".env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     # --- app ---
     app_name: str = "Project Sentinel"
@@ -37,13 +45,10 @@ class Settings(BaseSettings):
     chroma_persist_dir: str = "./.chroma"
 
     # --- llm ---
-    llm_provider: str = Field(default="mock")  # mock | openai | azure | ollama
-    llm_model: str = "gpt-4o-mini"
-    openai_api_key: str | None = None
-    openai_base_url: str | None = None
-    azure_openai_endpoint: str | None = None
-    azure_openai_api_key: str | None = None
-    ollama_base_url: str = "http://localhost:11434"
+    llm_provider: str = Field(default="mock")  # mock | groq
+    llm_model: str = "llama-3.3-70b-versatile"
+    groq_api_key: str | None = None
+    groq_base_url: str = "https://api.groq.com/openai/v1"
 
     # --- storage ---
     storage_backend: str = "local"  # local | s3

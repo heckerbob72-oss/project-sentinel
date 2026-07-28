@@ -21,8 +21,10 @@ def get_current_user(
     try:
         payload = decode_token(creds.credentials)
         email = payload.get("sub")
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+        ) from exc
     user = db.query(User).filter(User.email == email, User.is_deleted.is_(False)).first()
     if not user or not user.is_active:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found or inactive")

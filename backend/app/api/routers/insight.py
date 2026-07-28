@@ -20,7 +20,7 @@ def derive_project_metrics(db: Session, project_id: int) -> dict:
     tasks = _tasks_for(db, project_id)
     deps = _deps_for(db, project_id)
     members = _members_for(db, project_id)
-    project = db.query(Project).get(project_id)
+    project = db.get(Project, project_id)
 
     deadline = None
     if project and project.start_date and project.deadline:

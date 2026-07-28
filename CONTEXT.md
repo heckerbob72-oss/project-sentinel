@@ -1,4 +1,9 @@
-# Project Sentinel — Full Context Document
+---
+title: Project Sentinel Full Context
+description: Consolidated architecture, setup, operations, and project history
+---
+
+## Full context document
 
 > **Purpose of this file:** a single, exhaustive, self-contained reference for
 > onboarding a new environment, a new developer, or a new AI assistant session
@@ -281,8 +286,9 @@ project-sentinel/
 │       │
 │       ├── llm/
 │       │   ├── base.py          `LLMProvider` abstract interface
-│       │   ├── factory.py       `get_llm()` — returns `MockLLM()` unless `llm_provider=="openai"` and an
-│       │   │                    API key is set (lazy import); azure/ollama currently fall back to mock too
+│       │   ├── factory.py       `get_llm()` selects Groq when configured with a key and otherwise
+│       │   │                    returns the deterministic MockLLM fallback
+│       │   ├── groq.py          Groq chat-completion provider using its OpenAI-compatible HTTP API
 │       │   └── mock.py          `MockLLM` — deterministic canned/templated responses so the whole app
 │       │                        works fully offline with zero API keys
 │       │
@@ -401,11 +407,10 @@ environment). Defaults shown are what ships in the repo:
 | `REDIS_URL` | (redis service) | Only needed if using Celery workers |
 | `CHROMA_HOST` / `CHROMA_PORT` | `8001` (Docker maps container's 8000→8001) | |
 | `CHROMA_PERSIST_DIR` | `./.chroma` | Used when running Chroma embedded/local instead of a server |
-| `LLM_PROVIDER` | `mock` | Set to `openai` + `OPENAI_API_KEY` to use a real LLM |
-| `LLM_MODEL` | `gpt-4o-mini` | |
-| `OPENAI_API_KEY` / `OPENAI_BASE_URL` | unset | |
-| `AZURE_OPENAI_ENDPOINT` / `AZURE_OPENAI_API_KEY` | unset | Stubbed — currently falls back to mock |
-| `OLLAMA_BASE_URL` | `http://localhost:11434` | Stubbed — currently falls back to mock |
+| `LLM_PROVIDER` | `mock` | Set to `groq` for live language generation |
+| `LLM_MODEL` | `llama-3.3-70b-versatile` | Groq model identifier |
+| `GROQ_API_KEY` | unset | Groq API key; blank uses the deterministic mock fallback |
+| `GROQ_BASE_URL` | `https://api.groq.com/openai/v1` | Groq OpenAI-compatible API base URL |
 | `STORAGE_BACKEND` | `local` | |
 | `STORAGE_DIR` | `./storage` | |
 | `S3_BUCKET` / `S3_ENDPOINT_URL` | unset | Only relevant if `STORAGE_BACKEND=s3` |
@@ -419,7 +424,10 @@ POSTGRES_USER=sentinel
 POSTGRES_PASSWORD=sentinel
 POSTGRES_DB=sentinel
 SECRET_KEY=change-me-in-production-please-32bytes-min
-LLM_PROVIDER=mock
+LLM_PROVIDER=groq
+LLM_MODEL=llama-3.3-70b-versatile
+GROQ_API_KEY=
+GROQ_BASE_URL=https://api.groq.com/openai/v1
 NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
 ```
 
@@ -460,15 +468,14 @@ beyond Python and Node.
 
 **One command:**
 ```bash
-bash run.sh                                   # → http://localhost:8000/docs
-# second terminal:
-cd frontend && npm install && npm run dev     # → http://localhost:3000
+python3 run.py
 ```
 
-`run.sh` creates a `.venv`, installs `backend/requirements-local.txt` (the
-lean, SQLite-only, no-compiled-deps requirement set with version ranges that
-work on Python 3.11 through 3.14), runs the seed script, and starts uvicorn
-with `--reload`.
+`run.py` creates a `.venv`, installs missing backend and frontend dependencies,
+loads the ignored root `.env`, seeds the SQLite database, and supervises both
+Uvicorn and Next.js. Press Ctrl+C once to stop both. It also watches the parent
+process so a closed terminal cannot leave orphaned servers. `bash run.sh`
+remains a thin compatibility wrapper.
 
 **By hand:**
 ```bash
@@ -1021,9 +1028,8 @@ reseed it (see §7's gotcha note).
       `SCHEDULING_ENGINE.md`, `SETUP.md`, `SIMULATION_ENGINE.md`,
       `TESTING.md`) for even deeper subsystem-specific detail if extending
       those areas.
-- [ ] If wiring a real LLM provider (OpenAI), set `LLM_PROVIDER=openai` and
-      `OPENAI_API_KEY` in `.env` — Azure/Ollama support is stubbed and
-      currently always falls back to the mock LLM regardless of config.
+- [ ] Add a Groq key to the ignored `.env` as `GROQ_API_KEY` when live
+   language generation is required. A blank key uses the offline mock.
 
 ---
 
@@ -1035,8 +1041,9 @@ git clone https://github.com/heckerbob72-oss/project-sentinel.git
 cd project-sentinel
 
 # Fastest local run (no Docker)
-bash run.sh                                    # backend → :8000
-cd frontend && npm install && npm run dev      # frontend → :3000 (separate terminal)
+cp .env.example .env
+# Add GROQ_API_KEY to .env, or leave it blank for the mock provider.
+python3 run.py                                  # frontend :3000, backend :8000
 
 # Full stack via Docker
 cp .env.example .env

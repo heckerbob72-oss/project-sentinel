@@ -39,9 +39,13 @@ export function TopNav() {
 
   // Default-select the first project once loaded.
   useEffect(() => {
-    if (!selectedProjectId && projects && projects.length > 0) {
+    if (projects && projects.length > 0) {
+      const selectedExists = projects.some(
+        (project) => String(project.id) === String(selectedProjectId),
+      );
+      if (selectedExists) return;
       const first = projects[0];
-      setSelectedProject(first.id, first.name);
+      setSelectedProject(String(first.id), first.name);
     }
   }, [projects, selectedProjectId, setSelectedProject]);
 
@@ -83,7 +87,7 @@ export function TopNav() {
           <select
             value={selectedProjectId ?? ""}
             onChange={(e) => {
-              const p = projects?.find((x) => x.id === e.target.value);
+              const p = projects?.find((x) => String(x.id) === e.target.value);
               setSelectedProject(e.target.value || null, p?.name ?? null);
             }}
             className="focus-ring h-9 appearance-none rounded-lg border border-border bg-surface-raised pl-3 pr-8 text-sm text-foreground"
@@ -95,7 +99,7 @@ export function TopNav() {
               <>
                 <option value="">Select project…</option>
                 {projects.map((p) => (
-                  <option key={p.id} value={p.id}>
+                  <option key={p.id} value={String(p.id)}>
                     {p.name}
                   </option>
                 ))}

@@ -16,6 +16,7 @@ from ...agents import (
     WorkBreakdownAgent,
 )
 from ...core.audit import record_audit
+from ...core.exceptions import SentinelError
 from ...core.response import success
 from ...models.team import Member, MemberSkill, Skill
 from ...models.work import Task, TaskDependency, WBSItem
@@ -47,7 +48,7 @@ def _members_for(db: Session, project_id: int) -> list[dict]:
     for m in members:
         skills = {}
         for ms in db.query(MemberSkill).filter(MemberSkill.member_id == m.id).all():
-            skill = db.query(Skill).get(ms.skill_id)
+            skill = db.get(Skill, ms.skill_id)
             if skill:
                 skills[skill.name] = ms.proficiency
         out.append({"id": str(m.id), "name": m.name, "skills": skills,
@@ -99,7 +100,9 @@ def project_dependencies(project_id: int, db: Session = Depends(get_db), user=De
 @router.get("/projects/{project_id}/timeline")
 def project_timeline(project_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
     from ...models.project import Project
-    project = db.query(Project).get(project_id)
+    project = db.get(Project, project_id)
+    if not project or project.is_deleted:
+        raise SentinelError("not_found", f"Project {project_id} not found.", status_code=404)
     deadline = None
     if project and project.start_date and project.deadline:
         deadline = (project.deadline - project.start_date).days

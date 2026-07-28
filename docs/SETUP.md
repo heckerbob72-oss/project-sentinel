@@ -91,13 +91,10 @@ Configuration is centralised in `backend/app/config.py` (Pydantic settings, 12-f
 | `CHROMA_HOST` | `null` | ChromaDB host (unset → local persistence) |
 | `CHROMA_PORT` | `8001` | ChromaDB port |
 | `CHROMA_PERSIST_DIR` | `./.chroma` | Local Chroma persistence dir |
-| `LLM_PROVIDER` | `mock` | `mock` \| `openai` \| `azure` \| `ollama` |
-| `LLM_MODEL` | `gpt-4o-mini` | Model name for the chosen provider |
-| `OPENAI_API_KEY` | `null` | OpenAI / compatible key |
-| `OPENAI_BASE_URL` | `null` | Override for OpenAI-compatible endpoints |
-| `AZURE_OPENAI_ENDPOINT` | `null` | Azure OpenAI endpoint |
-| `AZURE_OPENAI_API_KEY` | `null` | Azure OpenAI key |
-| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama endpoint |
+| `LLM_PROVIDER` | `mock` | `mock` \| `groq` |
+| `LLM_MODEL` | `llama-3.3-70b-versatile` | Groq model name |
+| `GROQ_API_KEY` | `null` | Groq API key; blank falls back to MockLLM |
+| `GROQ_BASE_URL` | `https://api.groq.com/openai/v1` | Groq API base URL |
 | `STORAGE_BACKEND` | `local` | `local` \| `s3` |
 | `STORAGE_DIR` | `./storage` | Local storage directory |
 | `S3_BUCKET` | `null` | S3-compatible bucket |

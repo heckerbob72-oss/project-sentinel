@@ -21,9 +21,9 @@ celery_app.conf.update(task_track_started=True, task_time_limit=300)
 @celery_app.task(name="sentinel.recompute_health")
 def recompute_health(project_id: int) -> dict:
     """Recompute a project's health asynchronously."""
-    from ..database import SessionLocal
-    from ..api.routers.insight import derive_project_metrics
     from ..agents import HealthAgent
+    from ..api.routers.insight import derive_project_metrics
+    from ..database import SessionLocal
 
     db = SessionLocal()
     try:

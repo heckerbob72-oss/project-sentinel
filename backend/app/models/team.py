@@ -16,7 +16,7 @@ class Team(Base, TimestampMixin, SoftDeleteMixin):
     name: Mapped[str] = mapped_column(String(160))
     description: Mapped[str] = mapped_column(Text, default="")
 
-    members: Mapped[list["Member"]] = relationship(back_populates="team")
+    members: Mapped[list[Member]] = relationship(back_populates="team")
 
 
 class Member(Base, TimestampMixin, SoftDeleteMixin):
@@ -31,7 +31,7 @@ class Member(Base, TimestampMixin, SoftDeleteMixin):
     capacity_hours: Mapped[float] = mapped_column(Float, default=40.0)
 
     team: Mapped[Team] = relationship(back_populates="members")
-    skills: Mapped[list["MemberSkill"]] = relationship(back_populates="member")
+    skills: Mapped[list[MemberSkill]] = relationship(back_populates="member")
 
 
 class Skill(Base, TimestampMixin):

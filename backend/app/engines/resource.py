@@ -14,7 +14,7 @@ remaining capacity. Every assignment records why it was made.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from .explain import Calculation, Explanation
 

@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from ...core.audit import record_audit
+from ...core.exceptions import SentinelError
 from ...core.response import success
 from ...engines import SimulationEngine
 from ...models.project import Project
@@ -24,7 +25,9 @@ def run_simulation(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    project = db.query(Project).get(project_id)
+    project = db.get(Project, project_id)
+    if not project or project.is_deleted:
+        raise SentinelError("not_found", f"Project {project_id} not found.", status_code=404)
     deadline = None
     if project and project.start_date and project.deadline:
         deadline = (project.deadline - project.start_date).days
@@ -35,7 +38,15 @@ def run_simulation(
         "deadline": deadline or 30,
         "health_metrics": derive_project_metrics(db, project_id),
     }
-    res = SimulationEngine().simulate(state, body.scenario, body.params)
+    try:
+        res = SimulationEngine().simulate(state, body.scenario, body.params)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise SentinelError(
+            "invalid_simulation",
+            str(exc),
+            suggested_action="Correct the scenario parameters and retry.",
+            status_code=422,
+        ) from exc
 
     sim = Simulation(project_id=project_id, scenario=body.scenario, params=body.params,
                      created_by=user.id)

@@ -41,12 +41,20 @@ def register_exception_handlers(app) -> None:
 
     @app.exception_handler(RequestValidationError)
     async def _validation(_: Request, exc: RequestValidationError):
+        validation_errors = []
+        for item in exc.errors():
+            cleaned = dict(item)
+            if "ctx" in cleaned:
+                cleaned["ctx"] = {
+                    key: str(value) for key, value in cleaned["ctx"].items()
+                }
+            validation_errors.append(cleaned)
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             content=error(
                 error_code="validation_error",
                 message="Request validation failed.",
-                details={"errors": exc.errors()},
+                details={"errors": validation_errors},
                 suggested_action="Correct the highlighted fields and retry.",
             ),
         )

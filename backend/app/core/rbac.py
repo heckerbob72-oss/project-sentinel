@@ -1,12 +1,12 @@
 """Role-based access control: roles, permissions, and FastAPI guards."""
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from fastapi import Depends, HTTPException, status
 
 
-class Role(str, Enum):
+class Role(StrEnum):
     ADMIN = "Admin"
     PROJECT_MANAGER = "ProjectManager"
     TEAM_LEAD = "TeamLead"
@@ -14,7 +14,7 @@ class Role(str, Enum):
     VIEWER = "Viewer"
 
 
-class Permission(str, Enum):
+class Permission(StrEnum):
     PROJECT_CREATE = "project:create"
     PROJECT_EDIT = "project:edit"
     DOCUMENT_UPLOAD = "document:upload"

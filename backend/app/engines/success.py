@@ -107,7 +107,9 @@ class SuccessProbabilityCalculator:
 
         probability = sum(f.points for f in factors)
 
-        ratio = lambda f: f.points / f.max_points if f.max_points else 0
+        def ratio(factor: FactorScore) -> float:
+            return factor.points / factor.max_points if factor.max_points else 0
+
         pos = sorted(factors, key=ratio, reverse=True)[:2]
         neg = sorted(factors, key=ratio)[:2]
 

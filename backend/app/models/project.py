@@ -26,7 +26,7 @@ class Project(Base, TimestampMixin, SoftDeleteMixin):
     intake_completeness: Mapped[float] = mapped_column(Float, default=0.0)
     profile: Mapped[dict] = mapped_column(JSON, default=dict)
 
-    dna: Mapped["ProjectDNA"] = relationship(back_populates="project", uselist=False)
+    dna: Mapped[ProjectDNA] = relationship(back_populates="project", uselist=False)
 
 
 class ProjectDNA(Base, TimestampMixin):

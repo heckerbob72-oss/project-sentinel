@@ -1,9 +1,9 @@
 """Planning-related request schemas (WBS, schedule, dependency, simulation, intake)."""
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class WBSRequest(BaseModel):
@@ -40,8 +40,39 @@ class DependencyRequest(BaseModel):
 
 
 class SimulationRequest(BaseModel):
-    scenario: str = Field(description="e.g. task_delayed, deadline_shortened")
-    params: dict[str, Any] = {}
+    scenario: Literal[
+        "member_unavailable",
+        "deadline_shortened",
+        "task_delayed",
+        "add_requirement",
+        "scope_reduced",
+        "dependency_blocked",
+        "testing_extended",
+        "capacity_increased",
+    ]
+    params: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_scenario_params(self) -> SimulationRequest:
+        if self.scenario in {"task_delayed", "dependency_blocked"}:
+            if not str(self.params.get("task_id", "")).strip():
+                raise ValueError(f"{self.scenario} requires a task_id")
+
+        numeric_fields = {
+            "deadline_shortened": ("days",),
+            "task_delayed": ("days",),
+            "dependency_blocked": ("block_days",),
+            "testing_extended": ("days", "window"),
+        }.get(self.scenario, ())
+        for field_name in numeric_fields:
+            value = self.params.get(field_name)
+            if value is not None and (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or value < 0
+            ):
+                raise ValueError(f"{field_name} must be a non-negative number")
+        return self
 
 
 class IntakeRequest(BaseModel):

@@ -41,7 +41,9 @@ This log records the significant architecture decisions behind Sentinel and *why
 
 **Context.** Depending on a live LLM for local development, CI, and demos is slow, costly, flaky, and network-bound — and it makes tests non-deterministic.
 
-**Decision.** Ship a provider abstraction (`backend/app/llm/`) with a deterministic **MockLLM** as the default (`LLM_PROVIDER=mock`), alongside OpenAI-compatible, Azure OpenAI, and Ollama providers selectable purely via env vars.
+**Decision.** Ship a provider abstraction (`backend/app/llm/`) with a
+deterministic **MockLLM** as the default (`LLM_PROVIDER=mock`) and a Groq
+provider selected through environment variables (`LLM_PROVIDER=groq`).
 
 **Consequences.**
 - The whole pipeline runs offline with zero keys — ideal for onboarding, CI, and hackathon demos.

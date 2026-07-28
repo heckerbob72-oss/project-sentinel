@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 
 import type { GanttBar } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 
 /**
  * Lightweight div-based Gantt. Bars are positioned on a shared 0..duration
@@ -57,7 +57,8 @@ export function GanttChart({
       <div className="space-y-1.5">
         {bars.map((b) => {
           const left = (b.start / total) * 100;
-          const width = Math.max(((b.end - b.start) / total) * 100, 1.5);
+          const duration = b.end - b.start;
+          const width = Math.max((duration / total) * 100, 1.5);
           return (
             <div key={b.task_id} className="flex items-center gap-2">
               <div
@@ -86,9 +87,9 @@ export function GanttChart({
                       : "bg-sentinel-600/90 ring-1 ring-sentinel-500/50",
                   )}
                   style={{ left: `${left}%`, width: `${width}%` }}
-                  title={`${b.label}: day ${b.start}–${b.end}${b.critical ? " (critical)" : ""}`}
+                  title={`${b.label}: day ${formatNumber(b.start, 1)}–${formatNumber(b.end, 1)}${b.critical ? " (critical)" : ""}`}
                 >
-                  <span className="truncate">{b.end - b.start}d</span>
+                  <span className="truncate">{formatNumber(duration, 1)}d</span>
                 </div>
               </div>
             </div>

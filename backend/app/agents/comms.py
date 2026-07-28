@@ -1,7 +1,7 @@
 """Communication agents: Reporting, Executive Copilot, Meeting Minutes, Explainability."""
 from __future__ import annotations
 
-from ..engines.explain import Explanation
+from ..engines.explain import Calculation, Evidence, Explanation
 from ..llm import LLMMessage, get_llm
 from .base import AgentResult, BaseAgent
 
@@ -114,11 +114,33 @@ class ExplainabilityAgent(BaseAgent):
         source_exp = payload.get("explanation", {})
         exp = Explanation(
             summary=f"Explainability trace for: {subject}.",
-            agent=self.name, confidence=1.0,
+            agent=self.name, confidence=float(source_exp.get("confidence", 1.0)),
         )
         exp.reasoning = source_exp.get("reasoning", [])
         exp.rules_triggered = source_exp.get("rules_triggered", [])
-        exp.calculations = source_exp.get("calculations", [])
+        exp.evidence = [
+            item
+            if isinstance(item, Evidence)
+            else Evidence(
+                source=str(item.get("source", "audit")),
+                detail=str(item.get("detail", "")),
+                value=item.get("value"),
+            )
+            for item in source_exp.get("evidence", [])
+            if isinstance(item, (dict, Evidence))
+        ]
+        exp.calculations = [
+            item
+            if isinstance(item, Calculation)
+            else Calculation(
+                name=str(item.get("name", "calculation")),
+                formula=str(item.get("formula", "")),
+                inputs=item.get("inputs", {}) if isinstance(item.get("inputs", {}), dict) else {},
+                result=item.get("result"),
+            )
+            for item in source_exp.get("calculations", [])
+            if isinstance(item, (dict, Calculation))
+        ]
         exp.alternatives = source_exp.get("alternatives", [])
         data = {
             "subject": subject,

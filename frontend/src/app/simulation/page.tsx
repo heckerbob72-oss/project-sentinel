@@ -211,10 +211,14 @@ export default function SimulationPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">
+              <label
+                htmlFor="simulation-scenario"
+                className="mb-1 block text-xs font-medium text-muted-foreground"
+              >
                 Choose a scenario
               </label>
               <select
+                id="simulation-scenario"
                 value={scenarioId}
                 onChange={(e) => {
                   setScenarioId(e.target.value);
@@ -237,10 +241,14 @@ export default function SimulationPage() {
               <div className="space-y-3">
                 {scenario.params.map((p) => (
                   <div key={p.key}>
-                    <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                    <label
+                      htmlFor={`simulation-${p.key}`}
+                      className="mb-1 block text-xs font-medium text-muted-foreground"
+                    >
                       {p.label}
                     </label>
                     <input
+                      id={`simulation-${p.key}`}
                       type={p.kind === "number" ? "number" : "text"}
                       value={values[p.key] ?? p.default ?? ""}
                       placeholder={p.placeholder}

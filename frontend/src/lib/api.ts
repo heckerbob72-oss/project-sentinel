@@ -96,6 +96,9 @@ async function request<T>(
   }
 
   if (!res.ok) {
+    if (res.status === 401) {
+      useAuthStore.getState().logout();
+    }
     if (isErrorEnvelope(body)) {
       throw new ApiRequestError(body.message, {
         status: res.status,

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ProjectCreate(BaseModel):
@@ -32,6 +32,8 @@ class ProjectUpdate(BaseModel):
 
 
 class ProjectOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     description: str
@@ -44,6 +46,3 @@ class ProjectOut(BaseModel):
     deadline: date | None = None
     budget: float | None = None
     intake_completeness: float = 0.0
-
-    class Config:
-        from_attributes = True

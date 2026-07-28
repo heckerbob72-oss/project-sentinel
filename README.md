@@ -1,6 +1,11 @@
+---
+title: Project Sentinel
+description: Explainable agentic AI project coordination platform
+---
+
 <div align="center">
 
-# 🛰️ Project Sentinel
+## 🛰️ Project Sentinel
 ### The Agentic AI Project Co-ordinator
 
 **Explainable. Deterministic-first. Human-in-the-loop.**
@@ -102,14 +107,18 @@ The backend auto-runs migrations and seeds demo data on start.
 
 The backend defaults to **SQLite** and a **mock LLM**, so it runs with no
 Postgres, Redis, or API keys. One command sets up the venv, installs the minimal
-deps, seeds the DB, and starts the API:
+dependencies, seeds the DB, and starts both development servers:
 
 ```bash
-bash run.sh                          # → http://localhost:8000/docs
-
-# second terminal — the UI:
-cd frontend && npm install && npm run dev   # http://localhost:3000
+cp .env.example .env
+# Add GROQ_API_KEY to .env for live language generation, or leave it blank
+# to use the deterministic offline mock.
+python3 run.py
 ```
+
+Frontend: http://localhost:3000. API docs: http://localhost:8000/docs.
+Press Ctrl+C once to stop both servers. `bash run.sh` remains a compatibility
+wrapper around the same Python launcher.
 
 Or do it by hand (use **`requirements-local.txt`** — it omits the PostgreSQL
 driver and uses version ranges, so it installs cleanly on Python 3.11–3.14):

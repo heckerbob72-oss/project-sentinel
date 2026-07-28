@@ -30,7 +30,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     }
   }, [hasHydrated, token, isPublicPath, router]);
 
-  if (hasHydrated && !token && !isPublicPath) {
+  if (!isPublicPath && (!hasHydrated || !token)) {
     return null;
   }
 

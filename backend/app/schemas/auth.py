@@ -1,7 +1,7 @@
 """Auth schemas."""
 from __future__ import annotations
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class LoginRequest(BaseModel):
@@ -20,17 +20,16 @@ class RegisterRequest(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
-    user: "UserOut"
+    user: UserOut
 
 
 class UserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     email: str
     full_name: str
     role: str
-
-    class Config:
-        from_attributes = True
 
 
 TokenResponse.model_rebuild()

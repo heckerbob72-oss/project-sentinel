@@ -9,7 +9,7 @@ See [`../docs/DEPLOYMENT.md`](../docs/DEPLOYMENT.md) for the full guide.
 ## Production checklist
 1. Set a strong `SECRET_KEY` (32+ bytes) and rotate regularly.
 2. Point `DATABASE_URL` at managed PostgreSQL; run `alembic upgrade head`.
-3. Set `LLM_PROVIDER` to `openai`/`azure` with credentials (defaults to `mock`).
+3. Set `LLM_PROVIDER=groq` and provide `GROQ_API_KEY` (defaults to `mock`).
 4. Enable ChromaDB (`CHROMA_HOST`) for persistent RAG storage.
 5. Terminate TLS at the proxy (`nginx.conf`) or your load balancer.
 6. Set restrictive `CORS_ORIGINS`.

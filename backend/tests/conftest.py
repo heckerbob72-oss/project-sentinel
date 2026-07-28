@@ -7,18 +7,15 @@ from __future__ import annotations
 
 import pytest
 
-pytest.register_assert_rewrite("tests")
-
 
 @pytest.fixture()
 def client():
     """A TestClient wired to a fresh in-memory database with seed data."""
     from fastapi.testclient import TestClient
 
-    from app.database import Base, engine
+    from app.database import Base, SessionLocal, engine
     from app.main import app
     from app.seed.seed_data import seed
-    from app.database import SessionLocal
 
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)

@@ -41,7 +41,7 @@ intake_router = APIRouter(prefix="/intake", tags=["intake"])
 @intake_router.post("/{project_id}")
 def submit_intake(project_id: int, body: IntakeRequest,
                   db: Session = Depends(get_db), user=Depends(get_current_user)):
-    project = db.query(Project).get(project_id)
+    project = db.get(Project, project_id)
     if not project:
         raise SentinelError("not_found", "Project not found.", status_code=404)
     r = IntakeAgent().run({"profile": project.profile or {}, "answers": body.answers})
@@ -101,7 +101,16 @@ def explain_audit(audit_id: str, db: Session = Depends(get_db), user=Depends(get
         "alternatives": [],
     }
     r = ExplainabilityAgent().run({"subject": entry.action, "explanation": source_exp})
-    return success(r.data, r.explanation.to_dict())
+    trace = r.explanation.to_dict()
+    data = {
+        **r.data,
+        "audit_id": entry.audit_id,
+        "module": entry.action,
+        "agent": entry.agent,
+        "timestamp": entry.created_at.isoformat(),
+        "explanation": trace,
+    }
+    return success(data, trace)
 
 
 # ---- portfolio ----
@@ -113,7 +122,7 @@ def portfolio(db: Session = Depends(get_db), user=Depends(get_current_user)):
     rows = db.query(PortfolioProject).all()
     data = []
     for p in rows:
-        project = db.query(Project).get(p.project_id)
+        project = db.get(Project, p.project_id)
         data.append({
             "project_id": p.project_id,
             "name": project.name if project else "",
@@ -147,8 +156,9 @@ lessons_router = APIRouter(prefix="/lessons-learned", tags=["lessons-learned"])
 @lessons_router.get("")
 def lessons(db: Session = Depends(get_db), user=Depends(get_current_user)):
     rows = db.query(LessonsLearned).all()
-    return success([{"category": l.category, "title": l.title, "detail": l.detail,
-                     "recommendation": l.recommendation, "tags": l.tags} for l in rows])
+    return success([{"category": lesson.category, "title": lesson.title,
+                     "detail": lesson.detail, "recommendation": lesson.recommendation,
+                     "tags": lesson.tags} for lesson in rows])
 
 
 # ---- audit ----

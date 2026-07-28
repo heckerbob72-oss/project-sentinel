@@ -19,20 +19,15 @@ app = FastAPI(
     description="The Agentic AI Project Co-ordinator — explainable, deterministic-first.",
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # --- lightweight in-memory rate limiter (per client IP) ---
 _hits: dict[str, deque] = defaultdict(deque)
 
 
 @app.middleware("http")
 async def rate_limit(request: Request, call_next):
+    if request.method == "OPTIONS" or not request.url.path.startswith(settings.api_v1_prefix):
+        return await call_next(request)
+
     ip = request.client.host if request.client else "anon"
     now = time.time()
     window = _hits[ip]
@@ -46,6 +41,17 @@ async def rate_limit(request: Request, call_next):
         )
     window.append(now)
     return await call_next(request)
+
+
+# CORS must wrap the limiter so even locally-generated 429 responses include
+# access-control headers. Preflight requests are never counted as API usage.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 register_exception_handlers(app)

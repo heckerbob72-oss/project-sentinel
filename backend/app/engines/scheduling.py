@@ -18,8 +18,8 @@ was derived. Requires a valid DAG (use DependencyEngine first to guarantee it).
 from __future__ import annotations
 
 import math
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Iterable
 
 from .explain import Calculation, Explanation
 
@@ -97,6 +97,7 @@ class ScheduleResult:
 
 class SchedulingEngine:
     EPS = 1e-9
+    MAX_SCHEDULE_PRESSURE = 10.0
 
     @staticmethod
     def pert_expected(o: float, m: float, p: float) -> float:
@@ -183,7 +184,11 @@ class SchedulingEngine:
         if deadline is not None:
             deadline_feasible = project_duration <= deadline + self.EPS
             # pressure = required work / available time; >1 means infeasible
-            schedule_pressure = project_duration / deadline if deadline > 0 else math.inf
+            schedule_pressure = (
+                min(project_duration / deadline, self.MAX_SCHEDULE_PRESSURE)
+                if deadline > 0
+                else self.MAX_SCHEDULE_PRESSURE
+            )
 
         exp = self._explain(
             st, project_duration, project_std_dev, critical_path,
@@ -305,10 +310,16 @@ class SchedulingEngine:
                 )
             else:
                 exp.trigger("SCHEDULE_INFEASIBLE")
-                exp.add_reason(
-                    f"Deadline {deadline} days is INFEASIBLE — project needs "
-                    f"{duration:.1f} days. Schedule compression required."
-                )
+                if deadline <= 0:
+                    exp.add_reason(
+                        "The scenario leaves no delivery time; the deadline is "
+                        "INFEASIBLE and schedule pressure is capped at the maximum."
+                    )
+                else:
+                    exp.add_reason(
+                        f"Deadline {deadline} days is INFEASIBLE — project needs "
+                        f"{duration:.1f} days. Schedule compression required."
+                    )
                 exp.alternatives = [
                     "Reduce scope of non-critical deliverables",
                     "Parallelise independent critical-path tasks",

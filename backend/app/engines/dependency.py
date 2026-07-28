@@ -14,8 +14,8 @@ transparent and fully testable. Every result carries an Explanation.
 """
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Iterable
 
 from .explain import Calculation, Explanation
 

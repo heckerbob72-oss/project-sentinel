@@ -1,8 +1,8 @@
 """Work breakdown, tasks, dependencies, allocations, and milestones."""
 from __future__ import annotations
 
-from sqlalchemy import JSON, Boolean, Float, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import JSON, Boolean, Float, ForeignKey, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
 
 from ..database import Base
 from .base import SoftDeleteMixin, TimestampMixin

@@ -11,7 +11,7 @@ and every node's Explanation is collected into the shared state.
 """
 from __future__ import annotations
 
-from typing import Any, TypedDict
+from typing import TypedDict
 
 from ..agents import (
     DependencyAgent,

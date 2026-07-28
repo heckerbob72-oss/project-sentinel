@@ -126,15 +126,21 @@ class SimulationEngine:
     def _apply(self, state: dict, scenario: str, params: dict) -> dict:
         tasks = state["tasks"]
         if scenario == "deadline_shortened":
-            state["deadline"] = state.get("deadline", 30) - params.get("days", 5)
+            state["deadline"] = max(
+                0.0, float(state.get("deadline", 30)) - float(params.get("days", 5))
+            )
         elif scenario == "task_delayed":
             tid = params["task_id"]
             add = params.get("days", 3)
+            found = False
             for t in tasks:
                 if t["id"] == tid:
+                    found = True
                     for k in ("optimistic", "most_likely", "pessimistic", "duration"):
                         if k in t:
                             t[k] = float(t[k]) + add
+            if not found:
+                raise ValueError(f"Task '{tid}' was not found in the project plan.")
         elif scenario == "testing_extended":
             for t in tasks:
                 if "test" in t.get("label", "").lower():
@@ -168,9 +174,15 @@ class SimulationEngine:
             hm["max_utilisation"] = max(0.3, hm.get("max_utilisation", 0.8) * 0.75)
         elif scenario == "dependency_blocked":
             tid = params["task_id"]
+            found = False
             for t in tasks:
                 if t["id"] == tid:
+                    found = True
                     for k in ("optimistic", "most_likely", "pessimistic", "duration"):
                         if k in t:
                             t[k] = float(t[k]) + params.get("block_days", 5)
+            if not found:
+                raise ValueError(f"Task '{tid}' was not found in the project plan.")
+        else:
+            raise ValueError(f"Unsupported simulation scenario '{scenario}'.")
         return state

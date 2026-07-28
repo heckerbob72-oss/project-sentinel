@@ -1,4 +1,9 @@
-# Project Sentinel — Quickstart (fresh environment)
+---
+title: Project Sentinel Quickstart
+description: Set up and run Project Sentinel in a fresh environment
+---
+
+## Fresh environment quickstart
 
 This gets you from an unzipped folder to a running app + a passing end-to-end
 test, with **no Docker and no PostgreSQL** (the backend defaults to SQLite and a
@@ -11,22 +16,28 @@ built-in mock LLM). Everything here is self-contained.
 | Python | 3.11 – 3.14 | `python3 --version` |
 | Node.js | 18+ (20 recommended) | `node --version` |
 
-No API keys, no database server, no Redis. Nothing to sign up for.
+No API key, database server, or Redis instance is required. Add a Groq API key
+to `.env` for live language generation; without one, the deterministic mock LLM
+keeps every feature available offline.
 
 ---
 
-## 1. Start the backend
+## 1. Start the application
 
 ### Option A — one command
 ```bash
 cd project-sentinel
-bash run.sh
+cp .env.example .env
+python3 run.py
 ```
-This creates a virtualenv, installs the lean SQLite dependencies
-(`backend/requirements-local.txt`), seeds the demo data, and starts the API at
-**http://localhost:8000/docs**.
+This creates a virtual environment, installs backend and frontend dependencies
+when missing, seeds the demo data, and starts the frontend at
+**http://localhost:3000** and API docs at **http://localhost:8000/docs**.
+Press Ctrl+C once to stop both. `bash run.sh` invokes the same launcher.
 
-### Option B — by hand
+Set `GROQ_API_KEY` in `.env` to use Groq. Leave it blank to use the offline mock.
+
+### Option B — start each service by hand
 ```bash
 cd project-sentinel/backend
 python3 -m venv .venv && source .venv/bin/activate
@@ -35,25 +46,21 @@ python -m app.seed.run_seed                # seeds 3 demo projects
 uvicorn app.main:app --reload
 ```
 
-You should see `Seed complete...` then Uvicorn starting. Leave it running.
-
-> `requirements-local.txt` is the laptop path (SQLite, mock LLM).
-> `requirements.txt` is the full production stack (PostgreSQL, LangGraph,
-> ChromaDB, Celery) — use it with Docker or Python 3.11/3.12.
-
----
-
-## 2. Start the frontend (second terminal)
+In a second terminal:
 
 ```bash
 cd project-sentinel/frontend
-npm install          # first run only (~1–2 min)
+npm install
 npm run dev
 ```
 
 Open **http://localhost:3000** and sign in.
 
-### Demo logins
+> `requirements-local.txt` is the laptop path (SQLite and optional Groq).
+> `requirements.txt` is the full production stack (PostgreSQL, LangGraph,
+> ChromaDB, Celery); use it with Docker or Python 3.11/3.12.
+
+## 2. Demo logins
 | Role | Email | Password |
 | --- | --- | --- |
 | Project Manager | `pm@sentinel.dev` | `pm123456` |
